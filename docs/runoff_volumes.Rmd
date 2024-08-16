@@ -1,0 +1,39 @@
+---
+title: "runoff_volumes"
+author: "no one"
+date: "2024-08-16"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+# part 1: importing functions
+## init that comes with markup
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## libraries and sourcing the runoff eq
+```{r}
+library(tidyverse)
+library(here)
+source(here("src", "storm_runoff.R"))
+```
+
+## making seq to go into equation and runing function
+```{r}
+imperv_seq <- seq(from = 0.6, to = 0.8, by = 0.01)
+runoff_v <- predict_runoff(Ia = imperv_seq, A = 182)
+runoff_v_df <- data.frame(imperv_seq, runoff_v)
+```
+
+## making graph
+```{r}
+ggplot(data = runoff_v_df, aes(x = imperv_seq, y = runoff_v)) + geom_point() + geom_line() + labs(x = "watershed acreage", y = "impervious land")
+```
+
+## saving graph
+```{r}
+ggsave(here("figs", "stormwater_runoff.png"), height = 2, width = 10)
+```
+
+part 2

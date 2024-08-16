@@ -1,0 +1,76 @@
+---
+title: "us_tilapia_imports"
+author: "no one"
+date: "2024-08-16"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## libraries and read in csv
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+
+fish_stuff <- read_csv(here("data", "us_tilapia_imports.csv"))
+```
+
+## summry stats
+```{r}
+summary(fish_stuff)
+names(fish_stuff)
+dim(fish_stuff)
+skimr::skim(fish_stuff)
+```
+
+## turn csv to a pivot table
+```{r}
+fish_pivot <- pivot_longer(fish_stuff, cols = -country, names_to = "Year", values_to = "fish")
+```
+
+## will this work to turn year to numeric?
+```{r}
+test_mutate <- gsub("X", "", fish_pivot$Year)
+
+test_mutate <- unlist(test_mutate)
+test_mutate <- as.numeric(test_mutate)
+```
+
+## yes it does
+```{r}
+fish_pivot$Year <- gsub("X", "", fish_pivot$Year)
+
+fish_pivot$Year <- unlist(test_mutate)
+fish_pivot$Year <- as.numeric(test_mutate)
+```
+
+## summarized by year and count
+```{r}
+yearly_tilapia_tot <- fish_pivot %>% dplyr::group_by(Year) %>% summarize(fishTotal = sum(fish, na.rm = TRUE))
+```
+
+```{r}
+ggplot(data = yearly_tilapia_tot, aes(x = Year, y = fishTotal)) + geom_line() + labs(x = "Year", y = "total fish")
+```
+
+```{r}
+ggsave(here("figs", "pain_suffering.png"), height = 2, width = 20)
+```
+
+```{r}
+south_american_fish <- dplyr::filter(fish_pivot, country %in% c("Ecuador", "Honduras", "costa Rica", "Mexico"))
+```
+
+```{r}
+ggplot(south_american_fish, aes(x = Year, y = fish, group = country, colour = country)) + geom_line() + labs(y = "Total Catch")
+```
+
+```{r}
+ggsave(here("figs", "suffering_again_but_this_time_in_south_america.png"))
+```
+
